@@ -1,0 +1,24 @@
+POST http://localhost:8090/public/login
+content-type: application/json
+
+{
+    "email": "ahmedishtiaq977@gmail.com",
+    "password": "123456"
+}
+
+# POST http://localhost:8090/api/adduser
+# content-type:application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzUyMjM0Nzc3LCJleHAiOjE3NTIyMzgzNzd9.L9uvoZy8LkF9Hj9ObonnhML5WTWT8rnChJM8d5XX8Rg
+
+
+# {
+#     "name": "ahmed2",
+#     "password": "123456",
+#     "email":"ahmedishtiaq9776@gmail.com"
+# }
+
+# GET http://localhost:8090/api/getusers
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzUyMjM0Nzc3LCJleHAiOjE3NTIyMzgzNzd9.L9uvoZy8LkF9Hj9ObonnhML5WTWT8rnChJM8d5XX8Rg
+
+# GET http://localhost:8090/api/hello
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzUyMjM0Nzc3LCJleHAiOjE3NTIyMzgzNzd9.L9uvoZy8LkF9Hj9ObonnhML5WTWT8rnChJM8d5XX8Rg

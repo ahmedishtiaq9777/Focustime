@@ -1,0 +1,29 @@
+{
+  "development": {
+    "username": "testuser3",
+    "password": "21019909",
+    "database": "Focustime",
+    "host": "192.168.1.103",
+    "dialect": "mssql",
+     "dialectOptions": {
+      "options": {
+        "encrypt": false,
+        "trustServerCertificate": true
+      }
+    }
+  },
+  "test": {
+    "username": "madridin28",
+    "password": null,
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "mssql"
+  },
+  "production": {
+    "username": "root",
+    "password": null,
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "mssql"
+  }
+}

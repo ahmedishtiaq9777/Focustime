@@ -1,10 +1,23 @@
-POST http://localhost:8090/public/login
-content-type: application/json
+# POST http://localhost:8090/public/login
+# content-type: application/json
 
-{
-    "email": "ahmedishtiaq977@gmail.com",
-    "password": "123456"
-}
+# {
+#     "email": "ahmedishtiaq977@gmail.com",
+#     "password": "123456"
+# }
+
+
+GET http://localhost:8090/api/tasksWithsearch?search=
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzU0NDA2Mjk1LCJleHAiOjE3NTQ0MDk4OTV9.CEXeB0WezASgCfS5u6XrOaxX34NoMLpWwl2RhC1kjgM
+
+# GET http://localhost:8090/api/tasks?search=shopping&page=2&limit=5
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzU0Mzk5NTAwLCJleHAiOjE3NTQ0MDMxMDB9.3Ihgq2UcSPAVvm6FEDwWAxBLqUt-LjzMVRBLAyOo8h8
+
+
+# GET http://localhost:8090/api/tasks?search=shopping&page=2&limit=5
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzU0Mzk5NTAwLCJleHAiOjE3NTQ0MDMxMDB9.3Ihgq2UcSPAVvm6FEDwWAxBLqUt-LjzMVRBLAyOo8h8
+
+# GET http://localhost:8090/public/getuserstemp
 
 # POST http://localhost:8090/api/adduser
 # content-type:application/json
@@ -18,7 +31,13 @@ content-type: application/json
 # }
 
 # GET http://localhost:8090/api/getusers
-# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzUyMjM0Nzc3LCJleHAiOjE3NTIyMzgzNzd9.L9uvoZy8LkF9Hj9ObonnhML5WTWT8rnChJM8d5XX8Rg
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzUzNjA5MDkxLCJleHAiOjE3NTM2MTI2OTF9.cBZODKlzLBLEMOnBwKaRFON7OSe0EuHP5r6fPxCA9Xc
+
+
+# POST http://localhost:8090/api/logout
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzUzNjA5MDkxLCJleHAiOjE3NTM2MTI2OTF9.cBZODKlzLBLEMOnBwKaRFON7OSe0EuHP5r6fPxCA9Xc
+
+
 
 # GET http://localhost:8090/api/hello
-# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzUyMjM0Nzc3LCJleHAiOjE3NTIyMzgzNzd9.L9uvoZy8LkF9Hj9ObonnhML5WTWT8rnChJM8d5XX8Rg
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzUyMjM0Nzc3LCJleHAiOjE3NTIyMzgzNzd9.L9uvoZy8LkF9Hj9ObonnhML5WTWT8rnChJM8d5XX8Rg0

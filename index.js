@@ -115,7 +115,7 @@ router.route("/tasksWithsearch").get(async (req, res) => {
     }
 
     const tasks = await dbOps.getTasksByUser(whereClause);
-    console.log("tasks:", tasks);
+    // console.log("tasks:", tasks);
     res.json(tasks);
   } catch (error) {
     console.error("Error creating task:", error);

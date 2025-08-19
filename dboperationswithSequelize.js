@@ -35,14 +35,27 @@ function formatForSqlServer(date) {
  * Create a new task
  */
 
-async function createTask(title, userId, scheduledFor = null) {
-  const cleanDate = scheduledFor ? new Date(scheduledFor) : null;
-  console.log("date:", cleanDate);
-  return await Task.create({
+async function createTask(
+  title,
+  user_id,
+  scheduled_for = null,
+  priority = null,
+  description = null,
+  status = "Pending",
+  image_url = null
+) {
+  const cleanDate = scheduled_for ? new Date(scheduled_for) : null;
+
+  const newTask = await Task.create({
     title,
-    user_id: userId,
+    user_id,
     scheduled_for: cleanDate,
+    priority,
+    description,
+    status,
+    image_url,
   });
+  return newTask;
 }
 
 /**
@@ -92,7 +105,10 @@ async function getTaskpagination(where, limit, offset) {
     where: where,
     limit,
     offset,
-    order: [["created_at", "DESC"]], // or ASC
+    order: [
+      ["created_at", "DESC"],
+      ["id", "DESC"],
+    ], // or ASC
   });
 }
 

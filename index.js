@@ -6,13 +6,18 @@ var router = express.Router();
 var publicrouter = express.Router();
 const dboperations = require("./dboperations");
 const { Op } = require("sequelize");
+const multer = require("multer");
+const crypto = require("crypto");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 const dbOps = require("./dboperationswithSequelize");
 const { logout, verifyToken, generateToken } = require("./auth");
 const authenticateToken = require("./middleware");
-const Task = require("./models/task");
 
 require("dotenv").config();
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -24,8 +29,23 @@ var port = process.env.PORT || 8090;
 
 const SECRET_KEY = process.env.ACCESS_TOKEN_SECRET;
 
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
+const accessKey = process.env.ACCESS_KEY;
+const secretAccess_Key = process.env.SECRET_ACCESS_KEY;
+const s3 = new S3Client({
+  credentials: {
+    accessKeyId: accessKey,
+    secretAccessKey: secretAccess_Key,
+  },
+  region: bucketRegion,
+});
+
 app.listen(port);
 console.log("app is running  on port ", port);
+
+const RandomImageName = (bytes = 32) =>
+  crypto.randomBytes(bytes).toString("hex");
 
 publicrouter.post("/login", (req, res) => {
   const { email, password } = req.body;
@@ -140,24 +160,39 @@ router.delete("/tasks/:id", async (req, res) => {
   }
 });
 
-router.route("/addtasks2").post(async (req, res) => {
+router.post("/addtask2", upload.single("image"), async (req, res) => {
   try {
-    const { title, scheduled_for } = req.body;
+    const { title, scheduled_for, priority, description, status } = req.body;
     const userId = req.user.id; // Extracted from JWT
 
-    console.log("body:", req.body);
-    console.log("title:", title);
-    console.log("userid:", userId);
-    console.log("scheduled_for;", scheduled_for);
+    const imagename = RandomImageName();
 
-    let result = await dboperations.addTask(title, userId, scheduled_for);
-    res.json(result);
+    const params = {
+      Bucket: bucketName,
+      Key: imagename,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype,
+    };
+
+    const command = new PutObjectCommand(params);
+    await s3.send(command);
+
+    const task = await dbOps.createTask(
+      title,
+      userId,
+      scheduled_for,
+      priority,
+      description,
+      status,
+      imagename
+    );
+    res.status(201).json(task);
   } catch (error) {
     console.error("Error creating task:", error);
     res.status(500).json({ message: "Failed to create task" });
   }
 });
-router.route("/addtasks").post(async (req, res) => {
+router.route("/addtask").post(async (req, res) => {
   try {
     const { title, scheduled_for } = req.body;
     const userId = req.user.id; // Extracted from JWT
@@ -174,6 +209,11 @@ router.route("/addtasks").post(async (req, res) => {
     res.status(500).json({ message: "Failed to create task" });
   }
 });
+// router.route("/addtask2").post(async (req, res) => {
+//   try {
+
+//   } catch (error) {}
+// });
 
 // GET /api/tasks
 router.get("/tasks", async (req, res) => {
@@ -194,7 +234,7 @@ router.get("/tasks", async (req, res) => {
 
     // Fetch tasks with pagination
     const tasks = await dbOps.getTaskpagination(whereClause, limit, offset);
-    console.log("tasks:", tasks);
+    // console.log("tasksss:", tasks);
 
     res.json({
       tasks: tasks,

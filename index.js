@@ -8,7 +8,13 @@ const dboperations = require("./dboperations");
 const { Op } = require("sequelize");
 const multer = require("multer");
 const crypto = require("crypto");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} = require("@aws-sdk/client-s3");
+
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const dbOps = require("./dboperationswithSequelize");
 const { logout, verifyToken, generateToken } = require("./auth");
@@ -215,6 +221,38 @@ router.route("/addtask").post(async (req, res) => {
 //   } catch (error) {}
 // });
 
+router.put("/task/:id", upload.single("image"), async (req, res) => {
+  try {
+    const taskId = req.params.id;
+    const { title, scheduled_for, priority, description, status } = req.body;
+
+    let updates = {
+      title,
+      scheduled_for: scheduled_for ? new Date(scheduled_for) : null,
+      priority,
+      description,
+      status,
+    };
+    const imagename = RandomImageName();
+
+    // ✅ Handle image upload
+    if (req.file) {
+      updates.image_url = imagename;
+    }
+
+    const updatedTask = await dbOps.updateTask(taskId, updates);
+
+    if (!updatedTask) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+
+    res.json({ message: "Task updated successfully", task: updatedTask });
+  } catch (error) {
+    console.error("Error updating task:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // GET /api/tasks
 router.get("/tasks", async (req, res) => {
   try {
@@ -234,6 +272,19 @@ router.get("/tasks", async (req, res) => {
 
     // Fetch tasks with pagination
     const tasks = await dbOps.getTaskpagination(whereClause, limit, offset);
+
+    for (const task of tasks) {
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: task.image_url,
+      };
+
+      const command = new GetObjectCommand(getObjectParams);
+      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+
+      task.image_url = url;
+    }
+
     // console.log("tasksss:", tasks);
 
     res.json({

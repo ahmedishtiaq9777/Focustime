@@ -8,6 +8,11 @@ const dboperations = require("./dboperations");
 const { Op } = require("sequelize");
 const multer = require("multer");
 const crypto = require("crypto");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+const schedule = require("node-schedule");
+const dayjs = require("dayjs");
+
 const {
   S3Client,
   PutObjectCommand,
@@ -47,8 +52,51 @@ const s3 = new S3Client({
   region: bucketRegion,
 });
 
-app.listen(port);
-console.log("app is running  on port ", port);
+// 🔹 Create HTTP server & attach Socket.IO
+const server = createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
+// Listen for client connections
+io.on("connection", (socket) => {
+  // console.log("socket:", socket);
+  console.log("⚡ New client connected:", socket.id);
+
+  // Example test notification
+  socket.emit("hello", { message: "Hello from backend 👋" });
+
+  socket.on("disconnect", () => {
+    console.log("❌ Client disconnected:", socket.id);
+  });
+});
+
+// Start serverr
+server.listen(port, () => {
+  console.log("✅ App is running on port", port);
+});
+
+// Schedule reminders for all existing tasks
+async function scheduleReminders() {
+  try {
+    const allnotifications = await dbOps.getallnotification();
+    allnotifications.forEach((N_fic) => {
+      let task = dbOps.getTaskById(N_fic.taskId);
+
+      const reminderTime = dayjs(task.scheduled_for)
+        .subtract(1, "day")
+        .toDate();
+
+      // const reminderTime = dayjs().add(10, "second").toDate(); // for testing  purposes
+
+      schedule.scheduleJob(reminderTime, () => {
+        console.log(`🔔 Sending reminder: ${N_fic.message}`);
+        io.emit("reminder", { notification: N_fic });
+      });
+    });
+    console.log("✅ Reminders scheduled from DB tasks");
+  } catch (error) {
+    console.error("❌ Error scheduling reminders:", error);
+  }
+}
+scheduleReminders();
 
 const RandomImageName = (bytes = 32) =>
   crypto.randomBytes(bytes).toString("hex");
@@ -141,6 +189,19 @@ router.route("/tasksWithsearch").get(async (req, res) => {
     }
 
     const tasks = await dbOps.getTasksByUser(whereClause);
+
+    for (const task of tasks) {
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: task.image_url,
+      };
+
+      const command = new GetObjectCommand(getObjectParams);
+      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+
+      task.image_url = url;
+    }
+
     // console.log("tasks:", tasks);
     res.json(tasks);
   } catch (error) {
@@ -171,17 +232,20 @@ router.post("/addtask2", upload.single("image"), async (req, res) => {
     const { title, scheduled_for, priority, description, status } = req.body;
     const userId = req.user.id; // Extracted from JWT
 
-    const imagename = RandomImageName();
+    let imagename = null;
+    if (req.file) {
+      imagename = RandomImageName();
 
-    const params = {
-      Bucket: bucketName,
-      Key: imagename,
-      Body: req.file.buffer,
-      ContentType: req.file.mimetype,
-    };
+      const params = {
+        Bucket: bucketName,
+        Key: imagename,
+        Body: req.file.buffer,
+        ContentType: req.file.mimetype,
+      };
 
-    const command = new PutObjectCommand(params);
-    await s3.send(command);
+      const command = new PutObjectCommand(params);
+      await s3.send(command);
+    }
 
     const task = await dbOps.createTask(
       title,
@@ -192,10 +256,71 @@ router.post("/addtask2", upload.single("image"), async (req, res) => {
       status,
       imagename
     );
+    // Create notification in DB
+    const notificationMessage = `Reminder for task: ${task.title} schedule for ${task.scheduled_for}`;
+    const notification = await dbOps.createNotification({
+      user_id: userId,
+      task_id: task.id,
+      message: notificationMessage,
+      is_read: false,
+    });
+
+    const reminderTime = dayjs(task.scheduled_for).subtract(1, "day").toDate();
+    // const reminderTime = dayjs().add(10, "second").toDate();
+
+    schedule.scheduleJob(reminderTime, () => {
+      console.log(`🔔 Sending reminder: ${task.title}`);
+      io.emit("reminder", { notification });
+    });
     res.status(201).json(task);
   } catch (error) {
     console.error("Error creating task:", error);
     res.status(500).json({ message: "Failed to create task" });
+  }
+});
+
+router.route("/getDashboardData").get(async (req, res) => {
+  try {
+    const total = await dbOps.countAll();
+    const completed = await dbOps.countAll({ is_completed: true });
+    const pending = await dbOps.countAll({ is_completed: false });
+    const highPriority = await dbOps.countAll({ priority: "Extreme" });
+
+    const upcomingTasks = await dbOps.getUpcomingTasks();
+    const importantTasks = await dbOps.getImportantTasks();
+
+    for (const task of upcomingTasks) {
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: task.image_url,
+      };
+
+      const command = new GetObjectCommand(getObjectParams);
+      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+
+      task.image_url = url;
+    }
+
+    for (const task of importantTasks) {
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: task.image_url,
+      };
+
+      const command = new GetObjectCommand(getObjectParams);
+      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+
+      task.image_url = url;
+    }
+
+    res.json({
+      summary: { total, completed, pending, highPriority },
+      upcomingTasks,
+      importantTasks,
+    });
+  } catch (err) {
+    console.error("Error fetching dashboard data:", err);
+    res.status(500).json({ error: "Server error fetching dashboard data" });
   }
 });
 router.route("/addtask").post(async (req, res) => {
@@ -215,16 +340,24 @@ router.route("/addtask").post(async (req, res) => {
     res.status(500).json({ message: "Failed to create task" });
   }
 });
-// router.route("/addtask2").post(async (req, res) => {
-//   try {
 
-//   } catch (error) {}
-// });
-
+///update task
 router.put("/task/:id", upload.single("image"), async (req, res) => {
   try {
     const taskId = req.params.id;
     const { title, scheduled_for, priority, description, status } = req.body;
+    const imagename = RandomImageName();
+    if (req.file) {
+      const params = {
+        Bucket: bucketName,
+        Key: imagename,
+        Body: req.file.buffer,
+        ContentType: req.file.mimetype,
+      };
+
+      const command = new PutObjectCommand(params);
+      await s3.send(command);
+    }
 
     let updates = {
       title,
@@ -233,7 +366,6 @@ router.put("/task/:id", upload.single("image"), async (req, res) => {
       description,
       status,
     };
-    const imagename = RandomImageName();
 
     // ✅ Handle image upload
     if (req.file) {
@@ -285,8 +417,6 @@ router.get("/tasks", async (req, res) => {
       task.image_url = url;
     }
 
-    // console.log("tasksss:", tasks);
-
     res.json({
       tasks: tasks,
       currentPage: page,
@@ -296,5 +426,37 @@ router.get("/tasks", async (req, res) => {
   } catch (err) {
     console.error("Pagination error:", err);
     res.status(500).json({ message: "Failed to fetch tasks" });
+  }
+});
+
+/// notification end point
+
+router.patch("/notifications/:id/read", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log("id:", id);
+    const notification = await dbOps.getNotificationById(id);
+    if (!notification) {
+      return res.status(404).json({ error: "Notification not found" });
+    }
+
+    notification.isRead = true;
+    await notification.save();
+
+    res.json(notification);
+  } catch (error) {
+    console.error("Error updating notification:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/notifications", async (req, res) => {
+  try {
+    const userId = req.user.id; // from frontend
+    const notifications = await dbOps.getNotificationsByUser(userId);
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch notifications" });
   }
 });

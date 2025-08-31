@@ -1,6 +1,12 @@
-const { sequelize, Task, BlacklistedToken, User } = require("./models");
+const {
+  sequelize,
+  Task,
+  BlacklistedToken,
+  User,
+  Notification,
+} = require("./models");
 const { Op } = require("sequelize");
-const moment = require("moment");
+
 /**
  * Initialize DB Connection
  */
@@ -31,6 +37,7 @@ async function getAllUsers() {
 function formatForSqlServer(date) {
   return new Date(date).toISOString().replace("T", " ").substring(0, 23);
 }
+
 /**
  * Create a new task
  */
@@ -63,6 +70,37 @@ async function createTask(
  */
 async function getAllTasks() {
   return await Task.findAll();
+}
+async function countAll(where = {}) {
+  return Task.count({ where });
+}
+async function getTasks(where = {}, options = {}) {
+  return Task.findAll({
+    where,
+    order: options.order || [["created_at", "DESC"]],
+    limit: options.limit || null,
+  });
+}
+// Get upcoming tasks (next 7 days)
+async function getUpcomingTasks(limit = 5) {
+  const today = new Date();
+  const nextWeek = new Date();
+  nextWeek.setDate(today.getDate() + 7);
+
+  return getTasks(
+    {
+      is_completed: false,
+      scheduled_for: { [Op.between]: [today, nextWeek] },
+    },
+    { order: [["scheduled_for", "ASC"]], limit }
+  );
+}
+// Get important tasks
+async function getImportantTasks(limit = 5) {
+  return getTasks(
+    { is_completed: false, priority: "Extreme" },
+    { order: [["scheduled_for", "ASC"]], limit }
+  );
 }
 
 /**
@@ -109,6 +147,46 @@ async function getTaskpagination(where, limit, offset) {
       ["created_at", "DESC"],
       ["id", "DESC"],
     ], // or ASC
+  });
+}
+
+/*
+Notifications
+
+*/
+
+async function getNotificationById(id) {
+  return await Notification.findByPk(id);
+}
+
+async function getNotificationsByUser(userId) {
+  try {
+    const notifications = await Notification.findAll({
+      where: { userId: userId, isRead: false },
+      order: [["createdAt", "DESC"]],
+    });
+    return notifications;
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    throw error;
+  }
+}
+async function createNotification({
+  user_id,
+  task_id,
+  message,
+  is_read = false,
+}) {
+  return await Notification.create({
+    userId: user_id, // ✅ use camelCase
+    taskId: task_id, // ✅ use camelCase
+    message,
+    is_read,
+  });
+}
+async function getallnotification() {
+  return await Notification.findAll({
+    where: { isRead: false },
   });
 }
 
@@ -176,4 +254,11 @@ module.exports = {
   deleteExpiredTokens,
   getTaskcountByUser,
   getTaskpagination,
+  countAll,
+  getUpcomingTasks,
+  getImportantTasks,
+  createNotification,
+  getNotificationById,
+  getNotificationsByUser,
+  getallnotification,
 };

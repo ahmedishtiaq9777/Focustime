@@ -9,18 +9,13 @@ async function login(req, res) {
   try {
     const user = await dbOps.getUserByEmail(email); // implement in your User repo
     if (!user) return res.status(404).json({ message: "User not found" });
-    console.log("email:", email);
-    console.log("password:", password);
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    console.log("ispassword:", isPasswordValid);
+
     if (!isPasswordValid)
       return res.status(401).json({ message: "Invalid credentials" });
 
-    // console.log("user:", user.uid);
-
     const token = jwtService.generateToken({ id: user.uid, email: user.email });
-    // console.log("token:", token);
 
     res.json({ token, user });
   } catch (error) {

@@ -17,7 +17,7 @@ async function createTask(req, res) {
     const { title, scheduled_for, priority, description, status } = req.body;
 
     const userId = req.user.id; // from JWT middleware
-    console.log("userId", userId);
+
     const task = await createTaskService(
       { title, user_id: userId, scheduled_for, priority, description, status },
       req.file
@@ -93,7 +93,7 @@ async function deleteTask(req, res) {
     }
 
     const deletedCount = await deleteNotificationByTaskId(taskId);
-    console.log("countd", deletedCount);
+
     if (deletedCount == 0) {
       console.log("No notification found for the task deleted");
     }
@@ -106,8 +106,6 @@ async function deleteTask(req, res) {
 
 async function getDashboardData(req, res) {
   try {
-    // console.log("req.user", req.user);
-    // console.log("req:", req);
     const data = await getDashboardDataService(req.user.id);
     res.json(data);
   } catch (error) {

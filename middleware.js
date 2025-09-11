@@ -6,7 +6,6 @@ require("dotenv").config();
 const SECRET_KEY = process.env.ACCESS_TOKEN_SECRET;
 
 const authenticateToken = async (req, res, next) => {
-  console.log("middlewhere");
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 

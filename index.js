@@ -27,15 +27,13 @@ const io = new Server(server, {
 // Initialize notification service with io
 notificationService.initNotificationService(io);
 
-// Middlewares
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Public routes (login, logout)
+// routes (login, logout)
 app.use("/api", authRoutes);
 
-// Protected routes
 app.use("/api", taskRoutes);
 app.use("/api", notificationRoutes);
 app.use("/api", userRoutes);

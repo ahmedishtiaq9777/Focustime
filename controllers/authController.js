@@ -1,43 +1,43 @@
 const jwtService = require("../services/jwtservice");
 const dbOps = require("../repositories/userRepository");
 const bcrypt = require("bcryptjs");
+const AppError = require("../utils/AppError");
 
 // Login
-async function login(req, res) {
+async function login(req, res, next) {
   const { email, password } = req.body;
 
   try {
     const user = await dbOps.getUserByEmail(email); // implement in your User repo
-    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // if (!user) return res.status(401).json({ message: "User not found" });
+    if (!user) return next(new AppError("User not found", 401));
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if (!isPasswordValid)
-      return res.status(401).json({ message: "Invalid credentials" });
+    if (!isPasswordValid) return next(new AppError("Invalid credentials", 401));
 
     const token = jwtService.generateToken({ id: user.uid, email: user.email });
 
     res.json({ token, user });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Login failed" });
+    next(error);
   }
 }
 
 // Logout
-async function logout(req, res) {
+async function logout(req, res, next) {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
-      return res.status(400).json({ error: "Token required" });
+      return next(new AppError("Token required", 400));
     }
 
     await jwtService.logout(token);
 
     res.json({ message: "Logged out successfully" });
   } catch (error) {
-    console.error("Logout error:", error);
-    res.status(500).json({ error: "Logout failed" });
+    next(error);
   }
 }
 

@@ -1,17 +1,17 @@
-# POST http://localhost:8090/public/login
-# content-type: application/json
+POST http://localhost:8090/api/login
+content-type: application/json
 
-# {
-#     "email": "ahmedishtiaq977@gmail.com",
-#     "password": "123456"
-# }
+{
+    "email": "ahmedishtiaq977@gmail.com",
+    "password": "123456"
+}
 
 
 # GET http://localhost:8090/api/tasksWithsearch?search=
 # Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzU0NDA2Mjk1LCJleHAiOjE3NTQ0MDk4OTV9.CEXeB0WezASgCfS5u6XrOaxX34NoMLpWwl2RhC1kjgM
 
-GET http://localhost:8090/api/tasks?page=2&limit=7
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzU0ODYyMDgwLCJleHAiOjE3NTQ4NjU2ODB9.-HISLD44ljYvjzo3dCWsMBC6DDm-QamL_dIz0o7PvHk
+# GET http://localhost:8090/api/tasks?page=2&limit=7
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzU0ODYyMDgwLCJleHAiOjE3NTQ4NjU2ODB9.-HISLD44ljYvjzo3dCWsMBC6DDm-QamL_dIz0o7PvHk
 
 # GET http://localhost:8090/api/tasks?search=shopping&page=2&limit=5
 # Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhaG1lZGlzaHRpYXE5NzdAZ21haWwuY29tIiwiaWF0IjoxNzU0Mzk5NTAwLCJleHAiOjE3NTQ0MDMxMDB9.3Ihgq2UcSPAVvm6FEDwWAxBLqUt-LjzMVRBLAyOo8h8

@@ -13,6 +13,7 @@ const userRoutes = require("./routes/userRoutes");
 
 // Import notification service
 const notificationService = require("./services/notificationservice");
+const errorLogger = require("./middleware/errorlogger");
 
 // Initialize Express app
 const app = express();
@@ -37,6 +38,8 @@ app.use("/api", authRoutes);
 app.use("/api", taskRoutes);
 app.use("/api", notificationRoutes);
 app.use("/api", userRoutes);
+
+app.use(errorLogger);
 
 // Start server
 const PORT = process.env.PORT || 8090;

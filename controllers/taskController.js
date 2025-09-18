@@ -11,8 +11,9 @@ const {
 const {
   deleteNotificationByTaskId,
 } = require("../repositories/notificationRepository");
+const AppError = require("../utils/AppError");
 
-async function createTask(req, res) {
+async function createTask(req, res, next) {
   try {
     const { title, scheduled_for, priority, description, status } = req.body;
 
@@ -26,15 +27,15 @@ async function createTask(req, res) {
     res.status(201).json(task);
   } catch (error) {
     console.error("❌ Error creating task:", error);
-    res.status(500).json({ error: "Failed to create task" });
+    next(error);
   }
 }
 
-async function getTasksWithSearchControler(req, res) {
+async function getTasksWithSearchControler(req, res, next) {
   try {
     const userId = req.user.id;
     if (!userId) {
-      return res.status(403).json({ error: "Unauthorized" });
+      return next(new AppError("Unauthorized", 403));
     }
 
     const search = req.query.search || "";
@@ -43,14 +44,14 @@ async function getTasksWithSearchControler(req, res) {
     res.json(tasks);
   } catch (error) {
     console.error("Error fetching tasks:", error.message);
-    res.status(500).json({ message: "Failed to fetch tasks" });
+    next(error);
   }
 }
 
 /**
  * Get Paginated Tasks
  */
-async function getTasks(req, res) {
+async function getTasks(req, res, next) {
   try {
     const userId = req.user.id;
     const page = parseInt(req.query.page) || 1;
@@ -60,12 +61,11 @@ async function getTasks(req, res) {
 
     res.json(result);
   } catch (error) {
-    console.error("❌ Error fetching tasks:", error);
-    res.status(500).json({ error: "Failed to fetch tasks" });
+    next(error);
   }
 }
 
-async function updateTask(req, res) {
+async function updateTask(req, res, next) {
   try {
     const taskId = req.params.id;
     const updates = req.body;
@@ -73,23 +73,22 @@ async function updateTask(req, res) {
     const updatedTask = await updateTaskService(taskId, updates, req.file);
 
     if (!updatedTask) {
-      return res.status(404).json({ error: "Task not found" });
+      return next(new AppError("Task not found", 404));
     }
 
     res.json({ message: "Task updated successfully", task: updatedTask });
   } catch (error) {
-    console.error("❌ Error updating task:", error);
-    res.status(500).json({ error: "Failed to update task" });
+    next(error);
   }
 }
 
-async function deleteTask(req, res) {
+async function deleteTask(req, res, next) {
   try {
     const taskId = req.params.id;
 
     const deleted = await deleteTaskService(taskId);
     if (!deleted) {
-      return res.status(404).json({ error: "Task not found" });
+      return next(new AppError("Task not found", 404));
     }
 
     const deletedCount = await deleteNotificationByTaskId(taskId);
@@ -99,18 +98,17 @@ async function deleteTask(req, res) {
     }
     res.json({ message: "Task deleted successfully" });
   } catch (error) {
-    console.error("❌ Error deleting task:", error);
-    res.status(500).json({ error: "Failed to delete task" });
+    next(error);
   }
 }
 
-async function getDashboardData(req, res) {
+async function getDashboardData(req, res, next) {
   try {
     const data = await getDashboardDataService(req.user.id);
     res.json(data);
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
-    res.status(500).json({ error: "Server error fetching dashboard data" });
+    next(error);
   }
 }
 module.exports = {

@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const dbOps = require("./dboperationswithSequelize");
+const dbOps = require("../repositories/tokenRepository");
 // const redisClient = require("./redisClient");
 
 require("dotenv").config();

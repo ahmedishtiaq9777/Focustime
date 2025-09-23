@@ -2,6 +2,7 @@ const jwtService = require("../services/jwtservice");
 const dbOps = require("../repositories/userRepository");
 const bcrypt = require("bcryptjs");
 const AppError = require("../utils/AppError");
+const { Roles } = require("../utils/constants");
 
 // Login
 async function login(req, res, next) {
@@ -17,7 +18,11 @@ async function login(req, res, next) {
 
     if (!isPasswordValid) return next(new AppError("Invalid credentials", 401));
 
-    const token = jwtService.generateToken({ id: user.uid, email: user.email });
+    const token = jwtService.generateToken({
+      id: user.uid,
+      email: user.email,
+      role: user.role,
+    });
 
     res.json({ token, user });
   } catch (error) {

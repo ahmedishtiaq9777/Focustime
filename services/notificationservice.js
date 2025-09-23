@@ -8,7 +8,7 @@ function initNotificationService(io) {
 }
 
 /**
- * Create notification in DB and schedule reminder
+ * notification in DB and schedule reminder
  */
 async function createAndScheduleNotification(task, userId) {
   const notificationMessage = `Reminder for task: ${task.title} scheduled for ${task.scheduled_for}`;

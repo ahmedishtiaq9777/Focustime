@@ -41,7 +41,7 @@ async function createTaskService(data, file) {
     data.status,
     imageName
   );
-  // 2. Create notification for this task
+  // Create notification for this task
   await createAndScheduleNotification(task, data.user_id);
 
   return task;

@@ -19,6 +19,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(255),
         allowNull: true,
       },
+      role: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        defaultValue: "user",
+      },
     },
     {
       tableName: "User", // Matches your actual table name

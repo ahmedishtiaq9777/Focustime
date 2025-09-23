@@ -5,7 +5,7 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-const authenticateToken = require("../middleware/middleware");
+const { authenticateToken } = require("../middleware/middleware");
 router.use(authenticateToken);
 
 // Create task (with optional image upload)

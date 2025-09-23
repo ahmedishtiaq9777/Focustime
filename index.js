@@ -11,6 +11,8 @@ const taskRoutes = require("./routes/taskRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const userRoutes = require("./routes/userRoutes");
 
+const adminRoutes = require("./routes/adminRoutes");
+
 // Import notification service
 const notificationService = require("./services/notificationservice");
 const errorLogger = require("./middleware/errorlogger");
@@ -38,6 +40,8 @@ app.use("/api", authRoutes);
 app.use("/api", taskRoutes);
 app.use("/api", notificationRoutes);
 app.use("/api", userRoutes);
+
+app.use("/api/admin", adminRoutes);
 
 app.use(errorLogger);
 

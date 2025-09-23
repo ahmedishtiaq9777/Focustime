@@ -27,7 +27,7 @@ A full-stack Task Management system with authentication, task scheduling, notifi
    - Middleware for authentication included.
    - **Middleware for Error Logging**
    - **Error logging save in AWS S3 BUCKET**
-
+  
 5. **File Storage**
    - Task images are uploaded to **AWS S3**.
    - Images can be retrieved and displayed in the frontend.
@@ -43,6 +43,8 @@ A full-stack Task Management system with authentication, task scheduling, notifi
    - Real-time notifications received by the frontend app via WebSockets.
    - Tasks and notifications displayed with dynamic updates.
 
+5. **Admin and Error Logs**
+   - Admin Can see the error Logs from the frontend 
 ---
 
 ## Improvements (In Progress)

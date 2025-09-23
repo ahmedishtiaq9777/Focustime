@@ -25,6 +25,8 @@ A full-stack Task Management system with authentication, task scheduling, notifi
    - `POST /tasks` → Create a task (with image support).
    - `GET /tasks` → Get all tasks (with pagination & search).
    - Middleware for authentication included.
+   - **Middleware for Error Logging**
+   - **Error logging save in AWS S3 BUCKET**
 
 5. **File Storage**
    - Task images are uploaded to **AWS S3**.
